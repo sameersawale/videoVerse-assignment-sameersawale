@@ -10,6 +10,7 @@ import com.example.videoVerseassignment.Security.JwtTokenProvider;
 import com.example.videoVerseassignment.Service.Impl.UserServiceImpl;
 import com.example.videoVerseassignment.fileUpload.FileUploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,9 +39,21 @@ public class UserController {
     UserDetailsService userDetailsService;
 
 
-    @PostMapping("/signup")
-    public UserDetails addUser(@RequestBody SignUpDto signUpDto) throws Exception {
-        return userService.signUp(signUpDto);
+    @PostMapping(value = "/signup", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> addUser(@RequestParam("file") MultipartFile multipartFile, @RequestPart("user")SignUpDto signUpDto) throws Exception {
+        String fileName=multipartFile.getOriginalFilename();
+
+        signUpDto.setProfilePhoto(fileName);
+
+        User user=userService.signUp(signUpDto);
+
+        String uploadDir="./profilePhoto/"+user.getId();
+
+        FileUploadUtil.saveFile(uploadDir, fileName, multipartFile);
+
+        String result=user.getUsername()+" added successfully......";
+
+        return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
     @GetMapping("/get/{id}")
     public User getUser(@PathVariable("id") int id) throws Exception {
@@ -61,23 +74,23 @@ public class UserController {
 
 
 
-//    @PutMapping(value = "/update/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-//    public String updateUser(@PathVariable("id") int id, @RequestPart("user") UserUpdateDto userUpdateDto, @RequestParam("file") MultipartFile multipartFile) throws Exception {
-//        User user=userService.getUserById(id);
-//        String oldFileName=user.getProfilePhoto();
-//        String newFileName=multipartFile.getOriginalFilename();
-//        user.setProfilePhoto(newFileName);
-//
-//        userService.updateUser(id, userUpdateDto);
-//
-//        String uploadDir="./profilePhoto/"+user.getId();
-//
-//
-//        FileUploadUtil.updateFile(uploadDir, oldFileName, newFileName, multipartFile);
-//
-//        return "user update successfully.....";
-//
-//    }
+    @PutMapping(value = "/update/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public String updateUser(@PathVariable("id") int id, @RequestPart("user") UserUpdateDto userUpdateDto, @RequestParam("file") MultipartFile multipartFile) throws Exception {
+        User user=userService.getUserById(id);
+        String oldFileName=user.getProfilePhoto();
+        String newFileName=multipartFile.getOriginalFilename();
+        user.setProfilePhoto(newFileName);
+
+        userService.updateUser(id, userUpdateDto);
+
+        String uploadDir="./profilePhoto/"+user.getId();
+
+
+        FileUploadUtil.updateFile(uploadDir, oldFileName, newFileName, multipartFile);
+
+        return "user update successfully.....";
+
+    }
 
 
 }

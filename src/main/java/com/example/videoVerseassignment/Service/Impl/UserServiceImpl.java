@@ -3,7 +3,6 @@ package com.example.videoVerseassignment.Service.Impl;
 import com.example.videoVerseassignment.DTO.SignUpDto;
 import com.example.videoVerseassignment.DTO.UserUpdateDto;
 import com.example.videoVerseassignment.Entity.User;
-import com.example.videoVerseassignment.Entity.UserProfile;
 import com.example.videoVerseassignment.Repository.UserRepository;
 import com.example.videoVerseassignment.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.awt.dnd.InvalidDnDOperationException;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -38,6 +35,7 @@ public class UserServiceImpl implements UserService {
         user.setAddress(signUpDto.getAddress());
         user.setMobileNo(signUpDto.getMobileNo());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setBio(signUpDto.getBio());
         userRepository.save(user);
 
         return user;
@@ -59,6 +57,7 @@ public class UserServiceImpl implements UserService {
         user.setLastName(userUpdateDto.getLastName());
         user.setAddress(userUpdateDto.getAddress());
         user.setMobileNo(userUpdateDto.getMobileNo());
+        user.setBio(userUpdateDto.getBio());
 
         return userRepository.save(user);
 
@@ -73,14 +72,12 @@ public class UserServiceImpl implements UserService {
     public void follow(int userId) throws Exception {
         User authUser=getAuthenticateUser();
 
-        UserProfile userProfile=authUser.getUserProfile();
         if(authUser.getId()!=userId){
             User userToFollow=getUserById(userId);
-            UserProfile userProfile1=userToFollow.getUserProfile();
             authUser.getListOfFollowing().add(userToFollow);
-            userProfile.setFollowingCounts(userProfile.getFollowingCounts()+1);
+            authUser.setFollowingCounts(authUser.getFollowingCounts()+1);
             userToFollow.getFollowers().add(authUser);
-            userProfile1.setFollowersCounts(userProfile1.getFollowersCounts()+1);
+            userToFollow.setFollowersCounts(userToFollow.getFollowersCounts()+1);
 
             userRepository.save(authUser);
 

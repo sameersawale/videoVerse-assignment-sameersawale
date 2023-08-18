@@ -35,8 +35,21 @@ public class User implements UserDetails {
 
     private String mobileNo;
 
+    private String bio;
 
+    @Column(nullable = true, length = 64)
+    private String profilePhoto;
 
+    private int followersCounts;
+
+    private int followingCounts;
+
+    @Transient
+    public String getProfilePhotoPath(){
+        if(profilePhoto==null || id==0)
+            return null;
+        return"/profilePhoto/"+id+"/"+profilePhoto;
+    }
 
     @ManyToMany
     @JoinTable(
@@ -49,9 +62,6 @@ public class User implements UserDetails {
     @ManyToMany(mappedBy = "followers")
     private List<User>ListOfFollowing=new ArrayList<>();
 
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private UserProfile userProfile;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

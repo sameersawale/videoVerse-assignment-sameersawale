@@ -17,5 +17,8 @@ public class SignUpDto {
 
     private String mobileNo;
 
+    private String bio;
+
+    private String profilePhoto;
 
 }
